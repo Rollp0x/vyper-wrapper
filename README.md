@@ -1,14 +1,14 @@
 # Vyper Blueprint Wrapper
 
-A wrapper for the Vyper compiler that adds support for blueprint contracts in Foundry tests.
+A wrapper for the Vyper compiler that adds support for blueprint contracts in Foundry and hardhat tests.
 
 ## Overview
 
-This tool wraps the Vyper compiler to enable local testing of blueprint contracts in Foundry. It automatically detects contracts marked with `@blue_print` and generates the appropriate blueprint bytecode.
+This tool wraps the Vyper compiler to enable local testing of blueprint contracts in Foundry and hardhat tests. It automatically detects contracts marked with `@blue_print` and generates the appropriate blueprint bytecode.
 
 ## Features
 
-- Seamless integration with Foundry
+- Seamless integration with Foundry and hardhat
 - Support for blueprint contracts via `@blue_print` tag
 - Full compatibility with all original Vyper commands
 - Transparent proxy for non-blueprint operations
@@ -83,6 +83,40 @@ sudo cp target/release/vyper-wrapper $(dirname $(which vyper.origin))/vyper
 ```
 
 
+### For Hardhat Users
+
+After building the wrapper, you can directly replace the Hardhat-downloaded Vyper compiler:
+
+1. Find your Hardhat Vyper compiler cache:
+```bash
+# On macOS/Linux
+ls ~/Library/Caches/hardhat-nodejs/compilers-v2/vyper/
+
+# On Linux
+ls ~/.cache/hardhat-nodejs/compilers-v2/vyper/
+```
+
+2. Backup and replace the compiler:
+```bash
+# Example for macOS with Vyper 0.3.10
+cd ~/Library/Caches/hardhat-nodejs/compilers-v2/vyper/darwin/0.3.10
+mv vyper vyper.origin
+cp /path/to/your/vyper-wrapper vyper
+```
+
+3. Make sure both files are executable:
+```bash
+chmod +x vyper
+chmod +x vyper.origin
+```
+
+Now Hardhat will automatically use the wrapper when compiling Vyper contracts.
+
+Note: You'll need to repeat this process if:
+- Hardhat downloads a new version of Vyper
+- You clear the Hardhat cache
+- You switch to a different version of Vyper in your project
+
 
 ## Usage
 
@@ -115,14 +149,21 @@ vyper -f bytecode contract.vy
 ```
 
 
-
 ## How It Works
 
 1. For `--standard-json` (Foundry) mode:
    - Detects contracts marked with `# @blue_print`
    - Generates blueprint bytecode
    - Replaces normal bytecode in compiler output
-2. For other commands:
+
+2. For `-f combined_json` (Hardhat) mode:
+   - Processes all input files
+   - Detects contracts marked with `# @blue_print`
+   - Generates blueprint bytecode for marked contracts
+   - Updates the bytecode in the combined JSON output
+   - Maintains original bytecode for unmarked contracts
+
+3. For other commands:
    - Forwards all arguments to original compiler
    - Maintains original behavior
 
@@ -175,7 +216,7 @@ The wrapper needs to locate `vyper.origin` to function properly.
 
 ## License
 
-[License details]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contributing
 
